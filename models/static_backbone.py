@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 from tensorflow.python.keras.applications import resnet
+from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import Adam
@@ -60,5 +61,19 @@ def get_model_resnet18_v2(fc1_units, drop_out, learning_rate):
     model.compile(metrics=['cosine_similarity','mse'], optimizer=opt, loss=CosineSimilarity()) 
         
     return model
+        
+def get_model_resnet50_v1(fc1_units, drop_out, learning_rate):
+    init_model = ResNet50(include_top=False, input_shape = (400,640,1), weights=None)
 
+    x = init_model.output
+    x = GlobalAveragePooling2D()(x)
 
+    x = Dense(fc1_units, activation='relu')(x)
+    x = Dropout(args.drop_out)(x)
+    out = Dense(3)(x)
+    model = Model(inputs = init_model.input, outputs=out)
+
+    opt = Adam(learning_rate=learning_rate)
+    model.compile(metrics=['cosine_similarity','mse'], optimizer=opt, loss=CosineSimilarity()) 
+
+    return model
