@@ -85,7 +85,7 @@ def euclidean_distance(y_true, y_pred):
 
 def distributed_euclidean_distance(y_true, y_pred):
     """
-    Compute average euclidean distance
+    Compute average euclidean distance for distributed strategy training
     :param y_true: list of ground truth labels
     :param y_pred: list of predicted labels
     :return: euclidean distance
@@ -95,6 +95,11 @@ def distributed_euclidean_distance(y_true, y_pred):
 
 @tf.function
 def load_and_preprocess_image(path):
+    """
+    Loads and normalizes an image
+    :param path: path to image file    
+    :return: normalized image tensor
+    """
     image = tf.io.read_file(path)
     image = tf.image.decode_png(image, channels=1)
     image = tf.image.convert_image_dtype(image, tf.float32)
