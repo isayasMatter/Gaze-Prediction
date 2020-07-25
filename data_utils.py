@@ -112,47 +112,60 @@ def load_sequence(seq):
         load_and_preprocess_image, seq,  dtype=tf.float32, parallel_iterations=10)
     return imgs
 
-def configure_for_performance(ds, buffer_size=1000, batch_size=16, enable_cache = False):      
+def configure_for_performance(ds, buffer_size=1000, batch_size=16, enable_cache = False, shuffle=True):      
     
     if enable_cache == True:
         ds = ds.cache()
-        
-    ds = ds.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
+
+    if shuffle == True:    
+        ds = ds.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
+    
     ds = ds.batch(batch_size)
     ds = ds.repeat()
     ds = ds.prefetch(buffer_size=AUTOTUNE)
     return ds
 
-def prepare_dataset(x, y, sequence=False, buffer_size=1000, batch_size=16, enable_cache=False):
+def prepare_dataset(x, y, sequence=False, buffer_size=1000, batch_size=16, enable_cache=False, inference=False):
     images_dataset = tf.data.Dataset.from_tensor_slices(x)
-    labels_dataset = tf.data.Dataset.from_tensor_slices(y)
+    if inference == False:
+        labels_dataset = tf.data.Dataset.from_tensor_slices(y)
 
     if sequence == True:
         images_dataset = images_dataset.map(load_sequence, num_parallel_calls=AUTOTUNE)
     else:
         images_dataset = images_dataset.map(load_and_preprocess_image, num_parallel_calls=AUTOTUNE)
     
-    data_label_ds = tf.data.Dataset.zip((images_dataset, labels_dataset))
+    if inference == False:
+        dataset = tf.data.Dataset.zip((images_dataset, labels_dataset))
+    else:
+        dataset = images_dataset
 
-    data_label_ds = configure_for_performance(data_label_ds, 
+    dataset = configure_for_performance(dataset, 
                                               buffer_size=buffer_size, 
                                               batch_size=batch_size, 
-                                              enable_cache = enable_cache)
-    return data_label_ds
+                                              enable_cache = enable_cache,
+                                              shuffle = not inference)
+    return dataset
 
-def get_dataset(base_path, sequence=False, buffer_size=1000, batch_size=16):
+def get_dataset(base_path, sequence=False, buffer_size=1000, batch_size=16, inference=False):
     data_path = os.path.join(base_path, 'sequences')
     labels_path = os.path.join(base_path, 'labels')
 
-    data_paths_list, labels_list = generate_ids( data_path, labels_path, bin_by_sequence=sequence)    
-    
+    n_out = 0 if inference else 5
+
+    data_paths_list, labels_list = generate_ids( data_path, labels_path, bin_by_sequence=sequence, inference=inference)    
+    print(len(data_paths_list))
     if sequence == True:
-        x, y = to_supervised(data_paths_list, labels_list)    
-        dataset = prepare_dataset(x, y, sequence=True, buffer_size=buffer_size, batch_size = batch_size, enable_cache=False)
+        x, y = to_supervised(data_paths_list, labels_list, n_out=n_out, inference=inference)   
+        print(len(x)) 
+        dataset = prepare_dataset(x, y, sequence=True, buffer_size=buffer_size, batch_size = batch_size, enable_cache=False, inference=inference)
         samples = len(x)
     else:
         dataset = prepare_dataset(data_paths_list, labels_list, sequence=False, buffer_size=buffer_size, batch_size = batch_size, enable_cache=True)
         samples = len(data_paths_list)
+
+    if inference == True:
+        samples = x 
 
     return (dataset, samples)
    
