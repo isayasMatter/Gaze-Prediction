@@ -54,7 +54,9 @@ if __name__ == '__main__':
         elif  args.model_name == "vgg16":
             model = model_vgg16(args.fc1_units, args.dropout, args.learning_rate) 
         elif  args.model_name == "cnn_lstm":
-            model = model_cnn_lstm(args.static_model, args.learning_rate)                       
+            model = model_cnn_lstm(args.static_model, args.learning_rate)   
+        elif  args.model_name == "cnn_lstm_v2":
+            model = model_cnn_lstm_v2(args.static_model, args.learning_rate)                       
         else:           
             raise ValueError("Model {0} not found.".format(args.model_name))
                              
