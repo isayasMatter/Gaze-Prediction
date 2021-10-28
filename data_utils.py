@@ -112,7 +112,7 @@ def load_sequence(seq):
         load_and_preprocess_image, seq,  dtype=tf.float32, parallel_iterations=10)
     return imgs
 
-def configure_for_performance(ds, buffer_size=1000, batch_size=16, enable_cache = False, shuffle=True):      
+def configure_for_performance(ds, buffer_size=1000, batch_size=16, enable_cache = False, shuffle=True, repeat=True):      
     
     if enable_cache == True:
         ds = ds.cache()
@@ -121,7 +121,10 @@ def configure_for_performance(ds, buffer_size=1000, batch_size=16, enable_cache 
         ds = ds.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
     
     ds = ds.batch(batch_size)
-    ds = ds.repeat()
+
+    if repeat == True:
+        ds = ds.repeat()
+
     ds = ds.prefetch(buffer_size=AUTOTUNE)
     return ds
 
@@ -144,10 +147,11 @@ def prepare_dataset(x, y, sequence=False, buffer_size=1000, batch_size=16, enabl
                                               buffer_size=buffer_size, 
                                               batch_size=batch_size, 
                                               enable_cache = enable_cache,
-                                              shuffle = not inference)
+                                              shuffle = not inference,
+                                              repeat = not inference)
     return dataset
 
-def get_dataset(base_path, sequence=False, buffer_size=1000, batch_size=16, inference=False):
+def get_dataset(base_path, sequence=False, buffer_size=1000, batch_size=16, inference=False, seq_input_length=50):
     data_path = os.path.join(base_path, 'sequences')
     labels_path = os.path.join(base_path, 'labels')
 
@@ -156,7 +160,7 @@ def get_dataset(base_path, sequence=False, buffer_size=1000, batch_size=16, infe
     data_paths_list, labels_list = generate_ids( data_path, labels_path, bin_by_sequence=sequence, inference=inference)    
     print(len(data_paths_list))
     if sequence == True:
-        x, y = to_supervised(data_paths_list, labels_list, n_out=n_out, inference=inference)   
+        x, y = to_supervised(data_paths_list, labels_list, n_input=seq_input_length, n_out=n_out, inference=inference)   
         print(len(x)) 
         dataset = prepare_dataset(x, y, sequence=True, buffer_size=buffer_size, batch_size = batch_size, enable_cache=False, inference=inference)
         samples = len(x)
