@@ -30,6 +30,7 @@ def init_main():
     parser.add_argument("-s", "--static_model", dest="static_model", default="", help="The path to the static backbone network.")
     parser.add_argument("-b", "--batch_size", dest="batch_size", default=64, type=int, help="The batch size for inference")
     parser.add_argument("-bf", "--buffer_size", dest="buffer_size", default=10000, type=int, help="The shuffle buffer size")
+    parser.add_argument("-sl", "--sequence_length", dest="sequence_length", default=50, type=int, help="The shuffle buffer size")
     parser.add_argument("-lr", "--learning_rate", dest="learning_rate", default=0.0005, type=float, help="The training learning rate.")
     parser.add_argument("-d", "--dropout", dest="dropout", default=0.3, type=float, help="The drop out after FC1.")
     parser.add_argument("-u", "--fc1_units", dest="fc1_units", default=256, type=int, help="The shuffle buffer size")
@@ -50,13 +51,27 @@ if __name__ == '__main__':
         elif  args.model_name == "resnet18_v2":
             model = model_resnet18_v2(args.fc1_units, args.dropout, args.learning_rate)   
         elif  args.model_name == "resnet50_v1":
-            model = model_resnet50_v1(args.fc1_units, args.dropout, args.learning_rate)      
+            model = model_resnet50_v1(args.fc1_units, args.dropout, args.learning_rate)  
+        elif  args.model_name == "resnet50_v2":
+            model = model_resnet50_v2(args.fc1_units, args.dropout, args.learning_rate) 
+        elif  args.model_name == "resnet50_v3":
+            model = model_resnet50_v3(args.fc1_units, args.dropout, args.learning_rate)  
+        elif  args.model_name == "resnet50_v4":
+            model = model_resnet50_v4(args.fc1_units, args.dropout, args.learning_rate)   
+        elif  args.model_name == "resnet50_v5":
+            model = model_resnet50_v5(args.fc1_units, args.dropout, args.learning_rate)   
         elif  args.model_name == "vgg16":
             model = model_vgg16(args.fc1_units, args.dropout, args.learning_rate) 
         elif  args.model_name == "cnn_lstm":
-            model = model_cnn_lstm(args.static_model, args.learning_rate)   
+            model = model_cnn_lstm(args.static_model, args.learning_rate,seq_len=args.sequence_length)   
         elif  args.model_name == "cnn_lstm_v2":
-            model = model_cnn_lstm_v2(args.static_model, args.learning_rate)                       
+            model = model_cnn_lstm_v2(args.static_model, args.learning_rate,seq_len=args.sequence_length) 
+        elif  args.model_name == "cnn_lstm_v3":
+            model = model_cnn_lstm_v3(args.static_model, args.learning_rate,seq_len=args.sequence_length)   
+        elif  args.model_name == "cnn_lstm_v4":
+            model = model_cnn_lstm_v4(args.static_model, args.learning_rate,seq_len=args.sequence_length)   
+        elif  args.model_name == "cnn_lstm_v5":
+            model = model_cnn_lstm_v5(args.static_model, args.learning_rate,seq_len=args.sequence_length)                   
         else:           
             raise ValueError("Model {0} not found.".format(args.model_name))
                              
@@ -80,8 +95,8 @@ if __name__ == '__main__':
     early_stopping = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
 
     if args.training_type == 'full':
-        training_dataset, training_samples = get_dataset(TRAIN_PATH, sequence=True, buffer_size=args.buffer_size, batch_size=args.batch_size)
-        validation_dataset, validation_samples = get_dataset(VALIDATION_PATH, sequence=True, buffer_size=args.buffer_size, batch_size=args.batch_size)
+        training_dataset, training_samples = get_dataset(TRAIN_PATH, sequence=True, buffer_size=args.buffer_size, batch_size=args.batch_size, seq_input_length=args.sequence_length)
+        validation_dataset, validation_samples = get_dataset(VALIDATION_PATH, sequence=True, buffer_size=args.buffer_size, batch_size=args.batch_size,  seq_input_length=args.sequence_length)
     else:
         training_dataset, training_samples = get_dataset(TRAIN_PATH, sequence=False, buffer_size=args.buffer_size, batch_size=args.batch_size)
         validation_dataset, validation_samples = get_dataset(VALIDATION_PATH, sequence=False, buffer_size=args.buffer_size, batch_size=args.batch_size)
