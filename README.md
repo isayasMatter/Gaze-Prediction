@@ -10,4 +10,4 @@ The challenge had two tracks, one of which was the gaze prediction challenge. Th
 
 I used Tensorflow with Keras to implement a recurrent convolutional neural network. The network consists of two parts: 1) a Resnet (various variants) based part that learn features from each eye image, and 2) a many-to-one recurrent neural network based temporal part that predicts gaze positions.
 
-Although my submission was not the winning model :disappointed_relieved:,	 it scored way better than the baseline score and very close to the winning submission. Feel free to use the code as you see fit and shoot me an email if you have any questions about the code.
+My submission scored way better than the baseline score and very close to the winning submission. Feel free to use the code as you see fit and shoot me an email if you have any questions about the code.
