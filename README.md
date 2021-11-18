@@ -1,4 +1,4 @@
-# Eye gaze prediction OpenEDS 2020 Challenge
+# Eye gaze prediction - OpenEDS 2020 Challenge
 
 This repo contains the code I wrote for the OpenEDS 2020 Challenge. You can learn more about the challenge [here](https://research.fb.com/programs/openeds-2020-challenge).
 The challenge had two tracks, one of which was the gaze prediction challenge. The challange's main goals were:
